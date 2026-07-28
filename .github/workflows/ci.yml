@@ -11,5 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Hello Spring
-        run: echo "Hello Spring Boot"
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Check files are available for access or not
+        run: ls -lah
