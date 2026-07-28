@@ -31,6 +31,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Employee> employee(@PathVariable int id){
+        System.out.println("Getting employee");
         Optional<Employee> employee=employees.stream().filter(employee1 -> employee1.getId()==id).findFirst();
         return ResponseEntity.ok(employee.get());
     }
