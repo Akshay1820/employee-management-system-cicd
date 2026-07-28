@@ -23,12 +23,9 @@ jobs:
       - name: Building project
         run: mvn clean package
 
-      - name: check jar file exist after build
-        run: |
-          if ls target/*.jar 1> /dev/null 2>&1; then
-            echo "JAR file found."
-          else
-            echo "JAR file not found!"
-            exit 1
-          fi
+      - name: Uploading jar as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: employee-management-jar
+          path: target/*.jar
 
