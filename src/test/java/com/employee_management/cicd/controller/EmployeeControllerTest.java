@@ -15,6 +15,6 @@ class EmployeeControllerTest {
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(5, response.getBody().size());
+        assertEquals(6, response.getBody().size());
     }
 }
