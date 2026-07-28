@@ -14,5 +14,21 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Check files are available for access or not
-        run: ls -lah
+      - name: Setup Java on Runner
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Building project
+        run: mvn clean package
+
+      - name: check jar file exist after build
+        run: |
+          if ls target/*.jar 1> /dev/null 2>&1; then
+            echo "JAR file found."
+          else
+            echo "JAR file not found!"
+            exit 1
+          fi
+
