@@ -8,6 +8,8 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: cicd-image
 
 jobs:
   build:
@@ -35,10 +37,16 @@ jobs:
         run: mvn clean verify
 
       - name: Creating Docker Image
-        run: docker build -t cicd-image:${{github.sha}} .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
-      - name: Verify docker image
-        run: docker images
+      - name: Login to docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Pushing image to docker hub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Uploading jar as artifact
         uses: actions/upload-artifact@v4
