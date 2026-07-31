@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: cicd-image
+  IMAGE_NAME: spring-cicd
   ARTIFACT_NAME: employee-management-jar
 
 jobs:
