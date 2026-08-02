@@ -88,9 +88,6 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            hostname
-            pwd
-            docker ps
             
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             
@@ -104,9 +101,15 @@ jobs:
             --name ${{ env.CONTAINER_NAME }} \
             ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           
-            sleep 10
+            for i in {1..12}; do
+              if curl -f http://localhost:8082/actuator/health; then
+                echo "Deployment Successful"
+                exit 0
+              fi
             
-            curl -f http://localhost:8082/api/employee/all
-            
-            echo "Deployment Successful"
-
+              echo "Health Check Attempt: $i"
+              echo "Application not ready yet. Retrying..."
+              sleep 5
+            done
+            echo "Application failed to start."
+            exit 1
