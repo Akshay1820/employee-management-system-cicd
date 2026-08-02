@@ -75,12 +75,12 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
   deploy:
+    if: ${{ github.event_name == 'push' }}
     needs: docker
     runs-on: ubuntu-latest
 
     steps:
-      - name: Login to VPS
-        if: ${{ github.event_name == 'push' }}
+      - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -98,6 +98,10 @@ jobs:
             
             docker rm ${{ env.CONTAINER_NAME }} || true
             
-            docker run -d --restart unless-stopped -p 8082:8080 --name ${{ env.CONTAINER_NAME }} ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        
+            docker run -d \
+            --restart unless-stopped \
+            -p 8082:8080 \
+            --name ${{ env.CONTAINER_NAME }} \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                  
 
