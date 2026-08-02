@@ -12,6 +12,7 @@ on:
 env:
   IMAGE_NAME: spring-cicd
   ARTIFACT_NAME: employee-management-jar
+  CONTAINER_NAME: spring-cont
 
 jobs:
   build:
@@ -78,5 +79,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy application
-        run: echo "Deploying Spring Boot Application"
+      - name: Login to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            hostname
+            pwd
+            docker ps
+        
+
