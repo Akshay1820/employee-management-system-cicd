@@ -104,7 +104,7 @@ jobs:
             --name ${{ env.CONTAINER_NAME }} \
             ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           
-            sleep: 10
+            sleep 10
             
             curl -f http://localhost:8082/api/employee/all
             
