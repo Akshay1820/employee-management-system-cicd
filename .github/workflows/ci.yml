@@ -71,3 +71,10 @@ jobs:
       - name: Pushing image to docker hub
         if: ${{ github.event_name == 'push' }}
         run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      -name: Deploy application
+      run: echo "Deploying Spring Boot Application"
