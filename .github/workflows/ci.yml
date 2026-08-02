@@ -76,5 +76,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      -name: Deploy application
-      run: echo "Deploying Spring Boot Application"
+      - name: Deploy application
+        run: echo "Deploying Spring Boot Application"
