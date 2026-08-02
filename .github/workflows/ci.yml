@@ -80,6 +80,7 @@ jobs:
 
     steps:
       - name: Login to VPS
+        if: ${{ github.event_name == 'push' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
