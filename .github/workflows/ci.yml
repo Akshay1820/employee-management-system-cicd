@@ -88,40 +88,90 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            
+  
+            echo "Pulling latest image..."
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
+  
+            # Save currently running image for rollback
+            PREVIOUS_RUNNING_IMAGE=""
+  
             if docker inspect ${{ env.CONTAINER_NAME }} >/dev/null 2>&1; then
               PREVIOUS_RUNNING_IMAGE=$(docker inspect \
-              --format='{{.Config.Image}}' \
-              ${{ env.CONTAINER_NAME }})
-              echo "Container exists"
-              echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
+                --format='{{.Config.Image}}' \
+                ${{ env.CONTAINER_NAME }})
+  
+              echo "Current running image: $PREVIOUS_RUNNING_IMAGE"
             else
-              echo "Container not found. It's the first deployment."
+              echo "No existing container found. First deployment."
             fi
-    
-            echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
-            
+  
+            # Stop and remove existing container
             docker stop ${{ env.CONTAINER_NAME }} || true
-            
             docker rm ${{ env.CONTAINER_NAME }} || true
-            
+  
+            echo "Starting new container..."
+  
             docker run -d \
-            --restart unless-stopped \
-            -p 8082:8080 \
-            --name ${{ env.CONTAINER_NAME }} \
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          
+              --restart unless-stopped \
+              -p 8082:8080 \
+              --name ${{ env.CONTAINER_NAME }} \
+              ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+  
+            echo "Performing health check..."
+  
             for i in {1..12}; do
-              if curl -f http://localhost:8082/actuator/health; then
-                echo "Deployment Successful"
+              if curl -f http://localhost:8082/actuator/health >/dev/null 2>&1; then
+                echo "Deployment Successful."
                 exit 0
               fi
-            
+  
               echo "Health Check Attempt: $i"
-              echo "Application not ready yet. Retrying..."
+              echo "Application not ready. Retrying in 5 seconds..."
               sleep 5
             done
-            echo "Application failed to start."
-            exit 1
+  
+            echo "Deployment failed."
+            echo "Stopping failed container..."
+  
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
+  
+            ####################################################
+            # Rollback
+            ####################################################
+  
+            if [ -n "$PREVIOUS_RUNNING_IMAGE" ]; then
+  
+              echo "Rolling back to previous image: $PREVIOUS_RUNNING_IMAGE"
+  
+              docker run -d \
+                --restart unless-stopped \
+                -p 8082:8080 \
+                --name ${{ env.CONTAINER_NAME }} \
+                "$PREVIOUS_RUNNING_IMAGE"
+  
+              echo "Verifying rollback..."
+  
+              for i in {1..12}; do
+                if curl -f http://localhost:8082/actuator/health >/dev/null 2>&1; then
+                  echo "Rollback Successful."
+                  echo "Application has been restored."
+  
+                  # Deployment failed even though rollback succeeded
+                  exit 1
+                fi
+  
+                echo "Rollback Health Check Attempt: $i"
+                sleep 5
+              done
+  
+              echo "Rollback also failed."
+              exit 1
+  
+            else
+  
+              echo "Rollback not possible."
+              echo "No previous deployment found."
+              exit 1
+  
+            fi
