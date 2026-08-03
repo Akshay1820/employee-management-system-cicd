@@ -90,14 +90,15 @@ jobs:
           script: |
             
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            
-            if docker inspect ${{ env.CONTAINER_NAME }} > /dev/null > 2&1; then
+
+            if docker inspect ${{ env.CONTAINER_NAME }} >/dev/null 2>&1; then
               PREVIOUS_RUNNING_IMAGE=$(docker inspect \
               --format='{{.Config.Image}}' \
               ${{ env.CONTAINER_NAME }})
-              echo "Container exist"
+              echo "Container exists"
+              echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
             else
-              echo "Container not found its a first deployment"   
+              echo "Container not found. It's the first deployment."
             fi
     
             echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
