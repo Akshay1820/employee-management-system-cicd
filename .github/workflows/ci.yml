@@ -91,9 +91,14 @@ jobs:
             
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             
-            PREVIOUS_RUNNING_IMAGE=$(docker inspect \
-            --format='{{.Config.Image}}' \
-            ${{ env.CONTAINER_NAME }})
+            if docker inspect ${{ env.CONTAINER_NAME }} > /dev/null > 2&1; then
+              PREVIOUS_RUNNING_IMAGE=$(docker inspect \
+              --format='{{.Config.Image}}' \
+              ${{ env.CONTAINER_NAME }})
+              echo "Container exist"
+            else
+              echo "Container not found its a first deployment"   
+            fi
     
             echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
             
