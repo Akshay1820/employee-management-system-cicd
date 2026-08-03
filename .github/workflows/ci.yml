@@ -91,10 +91,11 @@ jobs:
             
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             
-            PREVIOUS_RUNNING_IMAGE=docker inspect \
-            --format='{{.Config.Image}}' ${{ env.IMAGE_NAME }}
-            
-            echo PREVIOUS_RUNNING_IMAGE
+            PREVIOUS_RUNNING_IMAGE=$(docker inspect \
+            --format='{{.Config.Image}}' \
+            ${{ env.CONTAINER_NAME }})
+    
+            echo "Previous Running Image: $PREVIOUS_RUNNING_IMAGE"
             
             docker stop ${{ env.CONTAINER_NAME }} || true
             
